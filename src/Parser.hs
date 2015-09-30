@@ -19,4 +19,5 @@ fileParser = P.many (P.many html *> propAccessParser <* P.many html) <* eof
   where
     html = spaces *> char '<' *> (many1 $ noneOf "<>") <* char '>' <* spaces
 
+test :: Parsec String () a -> String -> Either ParseError a
 test p = parse p ""
