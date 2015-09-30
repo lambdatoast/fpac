@@ -1,4 +1,4 @@
-module Parser (propAccessParser, fileParser, test) where
+module Parser (templateParser, test) where
 
 import Text.Parsec as P
 import Control.Applicative ((<$>),(<*), (*>), (<*>)) 
@@ -37,8 +37,8 @@ angularExpr :: Parser PropAccessPath
 angularExpr = 
   garbageL *> (string "{{" *> propAccessParser <* string "}}") <* garbageR
 
-fileParser :: Parser [PropAccessPath]
-fileParser = optional vanillaTag *> ((++) <$> manyAttrs <*> manyExprs) <* eof
+templateParser :: Parser [PropAccessPath]
+templateParser = optional vanillaTag *> ((++) <$> manyAttrs <*> manyExprs) <* eof
   where manyAttrs = (htmlo *> P.many (ngAttr propAccessParser) <* htmlc)
         manyExprs = P.many angularExpr
 
