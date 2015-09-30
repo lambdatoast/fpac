@@ -16,11 +16,17 @@ propAccessParser = PropAccessPath <$> (varName <* char '.') <*> accesses
     varName = many1 identifier
     accesses = (P.many1 identifier) `sepBy` (char '.')
 
+htmlTokens :: Parser Char
+htmlTokens = oneOf "<>/-" <|> alphaNum <|> space
+
+garbageR = skipMany htmlTokens <* spaces
+garbageL = spaces *> garbageR
+
+angularExpr :: Parser PropAccessPath
+angularExpr = garbageL *> (string "{{" *> propAccessParser <* string "}}") <* garbageR
+
 fileParser :: Parser [PropAccessPath]
-fileParser = P.many (P.many html *> propAccessParser <* P.many html) <* eof
-  where
-    html :: Parser String
-    html = spaces *> char '<' *> (many1 $ noneOf "<>") <* char '>' <* spaces
+fileParser = P.many angularExpr <* eof
 
 test :: Parsec String () a -> String -> Either ParseError a
 test p = parse p ""
