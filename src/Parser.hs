@@ -1,4 +1,4 @@
-module Parser where
+module Parser (propAccessParser, fileParser, test) where
 
 import Text.Parsec as P
 import Control.Applicative ((<$>),(<*), (*>), (<*>)) 
@@ -7,16 +7,19 @@ type PropName = String
 type VarName = String
 data PropAccessPath = PropAccessPath  VarName [PropName] deriving (Show)
 
-propAccessParser :: Parsec String st PropAccessPath
+type Parser = Parsec String ()
+
+propAccessParser :: Parser PropAccessPath
 propAccessParser = PropAccessPath <$> (varName <* char '.') <*> accesses
   where
     identifier = alphaNum <|> char '_'
     varName = many1 identifier
     accesses = (P.many1 identifier) `sepBy` (char '.')
 
-fileParser :: Parsec String st [PropAccessPath]
+fileParser :: Parser [PropAccessPath]
 fileParser = P.many (P.many html *> propAccessParser <* P.many html) <* eof
   where
+    html :: Parser String
     html = spaces *> char '<' *> (many1 $ noneOf "<>") <* char '>' <* spaces
 
 test :: Parsec String () a -> String -> Either ParseError a
