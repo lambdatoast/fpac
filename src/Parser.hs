@@ -14,7 +14,8 @@ propAccessParser = PropAccessPath <$> (varName <* char '.') <*> accesses
     varName = many1 identifier
     accesses = (P.many1 identifier) `sepBy` (char '.')
 
-fileParser = P.many html *> propAccessParser <* P.many html <* eof
+fileParser :: Parsec String st [PropAccessPath]
+fileParser = P.many (P.many html *> propAccessParser <* P.many html) <* eof
   where
     html = spaces *> char '<' *> (many1 $ noneOf "<>") <* char '>' <* spaces
 
