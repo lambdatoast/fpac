@@ -27,13 +27,20 @@ htmlc = skipMany (oneOf "> ") <* spaces
 
 vanillaTag = htmlo *> htmlc
 
+ngAttr :: Parser a -> Parser a
+ngAttr p = 
+  spaces *>
+  (string "ng-" *> P.many1 (alphaNum <|> oneOf "-") *> char '=' *> string "\"") 
+  *> p <* string "\"" <* spaces
+
 angularExpr :: Parser PropAccessPath
 angularExpr = 
-  (htmlo *> (string "ng-model=\"" *> propAccessParser <* string "\"") <* htmlc)
-  <|> garbageL *> (string "{{" *> propAccessParser <* string "}}") <* garbageR
+  garbageL *> (string "{{" *> propAccessParser <* string "}}") <* garbageR
 
 fileParser :: Parser [PropAccessPath]
-fileParser = optional vanillaTag *> P.many angularExpr <* eof
+fileParser = optional vanillaTag *> ((++) <$> manyAttrs <*> manyExprs) <* eof
+  where manyAttrs = (htmlo *> P.many (ngAttr propAccessParser) <* htmlc)
+        manyExprs = P.many angularExpr
 
 test :: Parsec String () a -> String -> Either ParseError a
 test p = parse p ""
