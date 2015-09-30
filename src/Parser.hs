@@ -17,16 +17,23 @@ propAccessParser = PropAccessPath <$> (varName <* char '.') <*> accesses
     accesses = (P.many1 identifier) `sepBy` (char '.')
 
 htmlTokens :: Parser Char
-htmlTokens = oneOf "<>/-" <|> alphaNum <|> space
+htmlTokens = oneOf "\"'.=<>/-" <|> alphaNum <|> space
 
 garbageR = skipMany htmlTokens <* spaces
 garbageL = spaces *> garbageR
 
+htmlo = spaces *> char '<' *> skipMany alphaNum <* spaces
+htmlc = skipMany (oneOf "> ") <* spaces
+
+vanillaTag = htmlo *> htmlc
+
 angularExpr :: Parser PropAccessPath
-angularExpr = garbageL *> (string "{{" *> propAccessParser <* string "}}") <* garbageR
+angularExpr = 
+  (htmlo *> (string "ng-model=\"" *> propAccessParser <* string "\"") <* htmlc)
+  <|> garbageL *> (string "{{" *> propAccessParser <* string "}}") <* garbageR
 
 fileParser :: Parser [PropAccessPath]
-fileParser = P.many angularExpr <* eof
+fileParser = optional vanillaTag *> P.many angularExpr <* eof
 
 test :: Parsec String () a -> String -> Either ParseError a
 test p = parse p ""
