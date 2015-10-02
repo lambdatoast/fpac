@@ -1,4 +1,4 @@
-module SchemaParser (schemaParser) where
+module Schema.Parser (schemaParser) where
 
 import qualified Data.List as L
 import Text.Parsec as P

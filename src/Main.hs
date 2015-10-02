@@ -1,7 +1,7 @@
 module Main where
 
 import qualified Parser as P
-import qualified SchemaParser as SP
+import qualified Schema.Parser as SP
 
 main :: IO ()
 main = do
