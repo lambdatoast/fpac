@@ -1,4 +1,4 @@
-module Parser (templateParser, test) where
+module Template.Parser (templateParser) where
 
 import Text.Parsec as P
 import Control.Applicative ((<$>),(<*), (*>), (<*>)) 
@@ -41,6 +41,3 @@ templateParser :: Parser [PropAccessPath]
 templateParser = optional vanillaTag *> ((++) <$> manyAttrs <*> manyExprs) <* eof
   where manyAttrs = (htmlo *> P.many (ngAttr propAccessParser) <* htmlc)
         manyExprs = P.many angularExpr
-
-test :: Parsec String () a -> String -> Either ParseError a
-test p = parse p ""
