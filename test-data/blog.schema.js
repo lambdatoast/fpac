@@ -11,5 +11,6 @@ var blogSchema = new Schema({
   meta: {
     votes: Number,
     favs:  Number
-  }
+  },
+  tags: [String]
 });
