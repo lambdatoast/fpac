@@ -1,4 +1,4 @@
-module Template.Parser (templateParser) where
+module Template.Parser (templateParser, PropAccessPath (..)) where
 
 import Text.Parsec as P
 import Control.Applicative ((<$>),(<*), (*>), (<*>)) 
