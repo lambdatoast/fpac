@@ -10,11 +10,11 @@ data PropAccessPath = PropAccessPath  VarName [PropName] deriving (Show)
 type Parser = Parsec String ()
 
 propAccessParser :: Parser PropAccessPath
-propAccessParser = PropAccessPath <$> (varName <* char '.') <*> accesses
+propAccessParser = PropAccessPath <$> (identifier <* char '.') <*> accesses
   where
-    identifier = alphaNum <|> char '_'
-    varName = many1 identifier
-    accesses = (P.many1 identifier) `sepBy` (char '.')
+    identifier = P.many1 (alphaNum <|> char '_')
+    bracketAccess = char '[' *> identifier <* char ']'
+    accesses = (try (identifier <* (P.many1 bracketAccess)) <|> identifier) `sepBy` (char '.')
 
 htmlTokens :: Parser Char
 htmlTokens = oneOf "\"'.=<>/-" <|> alphaNum <|> space
