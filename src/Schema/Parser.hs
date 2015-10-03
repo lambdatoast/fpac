@@ -3,11 +3,9 @@ module Schema.Parser (schemaParser, Schema (..), Prop (..), Val (..)) where
 import qualified Data.List as L
 import Text.Parsec as P
 import Control.Applicative ((<$>),(<*), (*>), (<*>), pure) 
+import Schema.AST
 
 type Parser = Parsec String ()
-data Val = SVal String | OVal [Prop] deriving (Show)
-data Prop = Prop String Val deriving (Show)
-data Schema = Schema [Prop] deriving (Show)
 
 key :: Parser String
 key = spaces *> P.many1 alphaNum <* spaces
@@ -24,8 +22,14 @@ simpleVal = SVal <$> (concat . L.intersperse "." <$> ((P.many1 alphaNum) `sepBy`
 objVal :: Parser Val
 objVal = OVal <$> between (char '{') (char '}') manyProps
 
+arrVal :: Parser Val
+arrVal = AVal <$> between (char '[') (char ']') val
+
+val :: Parser Val
+val = try objVal <|> arrVal <|> simpleVal
+
 prop :: Parser Prop
-prop = Prop <$> (key <* kvSep) <*> (try objVal <|> simpleVal)
+prop = Prop <$> (key <* kvSep) <*> val
 
 manyProps :: Parser [Prop]
 manyProps = (between spaces spaces prop) `sepBy` propSep
