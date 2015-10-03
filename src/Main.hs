@@ -9,8 +9,8 @@ import qualified Schema.Check as S
 test :: P.Parsec String () a -> String -> Either P.ParseError a
 test p = P.parse p ""
 
-checkTemplate :: SP.Schema -> TP.PropAccessPath -> (String, Bool)
-checkTemplate schema (TP.PropAccessPath var xs) = (L.intercalate "." $ [var] ++ xs, S.check xs schema)
+checkPropAccess :: SP.Schema -> TP.PropAccessPath -> (String, Bool)
+checkPropAccess schema (TP.PropAccessPath var xs) = (L.intercalate "." $ [var] ++ xs, S.check xs schema)
 
 main :: IO ()
 main = do
@@ -21,5 +21,5 @@ main = do
   putStrLn $ show $ do 
     propAccesses <- test TP.templateParser templateSrc
     schema <- test SP.schemaParser schemaSrc
-    return $ map (checkTemplate schema) propAccesses
+    return $ map (checkPropAccess schema) propAccesses
 
