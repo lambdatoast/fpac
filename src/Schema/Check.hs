@@ -9,7 +9,7 @@ check [] _ = True
 check _ (Schema []) = False
 check (a:as) (Schema ((Prop k v):ps)) =
   case v of
-    SVal _            -> if k == a then True else check (a:as) (Schema ps)
+    SVal _            -> if k == a then check as (Schema ps) else check (a:as) (Schema ps)
     OVal props        -> if k == a then check as (Schema props) else check (a:as) (Schema ps)
     AVal (SVal _)     -> case as of
                            [] -> k == a
