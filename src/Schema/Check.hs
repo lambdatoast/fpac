@@ -2,17 +2,17 @@ module Schema.Check (check) where
 
 import Schema.Parser
 
-type PropName = String
+type Accesor = String
 
-check :: [PropName] -> Schema -> Bool
+check :: [Accesor] -> Schema -> Bool
 check [] _ = True
 check _ (Schema []) = False
-check (x:xs) (Schema ((Prop y v):ys)) =
+check (a:as) (Schema ((Prop k v):ps)) =
   case v of
-    SVal _            -> if y == x then True else check (x:xs) (Schema ys)
-    OVal props        -> if y == x then check xs (Schema props) else check (x:xs) (Schema ys)
-    AVal (SVal _)     -> case xs of
-                           [] -> y == x
+    SVal _            -> if k == a then True else check (a:as) (Schema ps)
+    OVal props        -> if k == a then check as (Schema props) else check (a:as) (Schema ps)
+    AVal (SVal _)     -> case as of
+                           [] -> k == a
                            _  -> False -- trying to further access an SVal
-    AVal (OVal props) -> if y == x then check xs (Schema props) else check (x:xs) (Schema ys)
-    AVal (AVal v')     -> check (x:xs) (Schema ((Prop y v'):ys))
+    AVal (OVal props) -> if k == a then check as (Schema props) else check (a:as) (Schema ps)
+    AVal (AVal v')     -> check (a:as) (Schema ((Prop k v'):ps))

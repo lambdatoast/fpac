@@ -14,7 +14,7 @@ checkPropAccess schema (TP.PropAccessPath var xs) = (L.intercalate "." $ [var] +
 
 main :: IO ()
 main = do
-  templateSrc <- readFile "./test-data/simple.html"
+  templateSrc <- readFile "./test-data/blog.html"
   putStrLn $ show $ test TP.templateParser templateSrc
   schemaSrc <- readFile "./test-data/blog.schema.js"
   putStrLn $ show $ test SP.schemaParser schemaSrc
