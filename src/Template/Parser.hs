@@ -38,6 +38,6 @@ angularExpr =
   garbageL *> (string "{{" *> propAccessParser <* string "}}") <* garbageR
 
 templateParser :: Parser [PropAccessPath]
-templateParser = optional vanillaTag *> ((++) <$> manyAttrs <*> manyExprs) <* eof
+templateParser = ((++) <$> manyAttrs <*> manyExprs) <* eof
   where manyAttrs = (htmlo *> P.many (ngAttr propAccessParser) <* htmlc)
         manyExprs = P.many angularExpr
