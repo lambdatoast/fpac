@@ -1,7 +1,6 @@
 module Template.Parser (templateParser, PropAccessPath (..)) where
 
 import Text.Parsec as P
-import Control.Applicative ((<$>),(<*), (*>), (<*>)) 
 
 type PropName = String
 type VarName = String
@@ -19,13 +18,17 @@ propAccessParser = PropAccessPath <$> (identifier <* char '.') <*> accesses
 htmlTokens :: Parser Char
 htmlTokens = oneOf "\"'.=<>/-" <|> alphaNum <|> space
 
+garbageR :: Parser ()
 garbageR = skipMany htmlTokens <* spaces
+
+garbageL :: Parser ()
 garbageL = spaces *> garbageR
 
+htmlo :: Parser ()
 htmlo = spaces *> char '<' *> skipMany alphaNum <* spaces
-htmlc = skipMany (oneOf "> ") <* spaces
 
-vanillaTag = htmlo *> htmlc
+htmlc :: Parser ()
+htmlc = skipMany (oneOf "> ") <* spaces
 
 ngAttr :: Parser a -> Parser a
 ngAttr p = 
