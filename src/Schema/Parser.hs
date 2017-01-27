@@ -2,7 +2,6 @@ module Schema.Parser (schemaParser, Schema (..), Prop (..), Val (..)) where
 
 import qualified Data.List as L
 import Text.Parsec as P
-import Control.Applicative ((<$>),(<*), (*>), (<*>), pure) 
 import Schema.AST
 
 type Parser = Parsec String ()
