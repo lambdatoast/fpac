@@ -8,6 +8,7 @@ data Arb = Number_
          | Bool_
          | DateTime_
          | String_
+         | JSON_
          deriving Show
 
 newtype Name = Name Text deriving Show
@@ -17,9 +18,8 @@ type Props = [ArbProp]
 fromVal :: Val -> Arb
 fromVal (SVal "String")  = String_
 fromVal (SVal "Boolean") = Bool_
--- data Prop = Prop String Val deriving (Show)
--- date: { type: Date, default: Date.now }
 fromVal (OVal ((Prop "type" (SVal "Date")):_)) = DateTime_
+fromVal _ = JSON_
 
 generate :: Schema -> Props
 generate (Schema []) = []
@@ -32,6 +32,7 @@ fromArb Number_   = "jsc.number"
 fromArb String_   = "jsc.string"
 fromArb Bool_     = "jsc.bool"
 fromArb DateTime_ = "jsc.datetime"
+fromArb JSON_     = "jsc.json"
 
 showJS :: Props -> Text
 showJS arbDef = L.concat $ L.intersperse sep (showJS_ arbDef)
