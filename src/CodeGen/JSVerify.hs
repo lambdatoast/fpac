@@ -27,7 +27,7 @@ fromVal (SVal "Date")  = DateTime_
 fromVal (SVal "String")  = String_
 fromVal (SVal "Object") = JSON_
 fromVal (AVal v) = Array_ $ fromVal v
-fromVal (OVal ((Prop "type" (SVal "Date")):_)) = DateTime_
+fromVal (OVal ((Prop "type" v):_)) = fromVal v
 fromVal (OVal props) = Record_ $ fmap recordField props
 
 generate :: Schema -> Props
