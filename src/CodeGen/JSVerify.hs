@@ -9,6 +9,7 @@ data Arb = Number_
          | DateTime_
          | String_
          | JSON_
+         | Array_ Arb
          | Record_ [ArbProp]
          deriving Show
 
@@ -20,13 +21,14 @@ recordField :: Prop -> ArbProp
 recordField (Prop s v) = ArbProp (Name s) (fromVal v)
 
 fromVal :: Val -> Arb
-fromVal (SVal "String")  = String_
-fromVal (SVal "Boolean") = Bool_
 fromVal (SVal "Number") = Number_
+fromVal (SVal "Boolean") = Bool_
+fromVal (SVal "Date")  = DateTime_
+fromVal (SVal "String")  = String_
 fromVal (SVal "Object") = JSON_
+fromVal (AVal v) = Array_ $ fromVal v
 fromVal (OVal ((Prop "type" (SVal "Date")):_)) = DateTime_
 fromVal (OVal props) = Record_ $ fmap recordField props
-fromVal _ = JSON_
 
 generate :: Schema -> Props
 generate (Schema []) = []
@@ -35,15 +37,19 @@ generate (Schema ((Prop name v):rest)) = (ArbProp (Name name) $ fromVal v) : gen
 type Text = String
 
 fromArb :: Arb -> Text
-fromArb Number_   = "jsc.number"
-fromArb String_   = "jsc.string"
-fromArb Bool_     = "jsc.bool"
-fromArb DateTime_ = "jsc.datetime"
-fromArb (Record_ arbprops) = "jsc.record(" ++ showProps arbprops ++ ")"
-fromArb JSON_     = "jsc.json"
+fromArb Number_            = "jsc.number"
+fromArb String_            = "jsc.string"
+fromArb Bool_              = "jsc.bool"
+fromArb DateTime_          = "jsc.datetime"
+fromArb (Record_ arbprops) = "jsc.record" ++ (parens . showProps) arbprops
+fromArb (Array_ arb)       = "jsc.array" ++ (parens . fromArb) arb
+fromArb JSON_              = "jsc.json"
 
 braces :: Text -> Text
 braces s = "{" ++ s ++ "}"
+
+parens :: Text -> Text
+parens s = "(" ++ s ++ ")"
 
 showProps :: Props -> Text
 showProps arbDef = braces $ L.concat $ L.intersperse sep (showJS_ arbDef)
