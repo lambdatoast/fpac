@@ -1,6 +1,6 @@
 module CodeGen.JSVerify where
 
-import Schema.AST
+import Schema.AST (Schema(..), Prop(..), Val(..))
 
 import qualified Data.List as L
 
@@ -10,27 +10,38 @@ data Arb = Number_
          | String_
          deriving Show
 
-newtype Name = Name String deriving Show
+newtype Name = Name Text deriving Show
 data ArbProp = ArbProp Name Arb deriving Show
 type Props = [ArbProp]
 
+fromVal :: Val -> Arb
+fromVal (SVal "String")  = String_
+fromVal (SVal "Boolean") = Bool_
+-- data Prop = Prop String Val deriving (Show)
+-- date: { type: Date, default: Date.now }
+fromVal (OVal ((Prop "type" (SVal "Date")):_)) = DateTime_
+
 generate :: Schema -> Props
 generate (Schema []) = []
-generate (Schema ((Prop name (SVal "String")):rest)) = (ArbProp (Name name) String_) : generate (Schema rest)
-generate (Schema ((Prop name (SVal "Boolean")):rest)) = (ArbProp (Name name) Bool_) : generate (Schema rest)
+generate (Schema ((Prop name v):rest)) = (ArbProp (Name name) $ fromVal v) : generate (Schema rest)
 
-type Output = String
+type Text = String
 
-showJS :: Props -> Output
+fromArb :: Arb -> Text
+fromArb Number_   = "jsc.number"
+fromArb String_   = "jsc.string"
+fromArb Bool_     = "jsc.bool"
+fromArb DateTime_ = "jsc.datetime"
+
+showJS :: Props -> Text
 showJS arbDef = L.concat $ L.intersperse sep (showJS_ arbDef)
   where
-    sep :: Output
+    sep :: Text
     sep = ",\n"
-    inBrackets :: Output -> Output
-    inBrackets s = "{" ++ s ++ "}"
-    showJS_ :: Props -> [String]
+    -- inBrackets :: Text -> Text
+    -- inBrackets s = "{" ++ s ++ "}"
+    showKV :: Name -> Text -> Text
+    showKV (Name n) v = n ++ ": " ++ v
+    showJS_ :: Props -> [Text]
     showJS_ [] = []
-    showJS_ ((ArbProp (Name n) Number_):props) = (n ++ ": " ++ "jsc.number") : showJS_ props
-    showJS_ ((ArbProp (Name n) String_):props) = (n ++ ": " ++ "jsc.string") : showJS_ props
-    showJS_ ((ArbProp (Name n) Bool_):props)   = (n ++ ": " ++ "jsc.bool")   : showJS_ props
-
+    showJS_ ((ArbProp name arb):props) = showKV name (fromArb arb) : showJS_ props
