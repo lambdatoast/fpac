@@ -12,14 +12,35 @@ test p = P.parse p ""
 checkPropAccess :: SP.Schema -> TP.PropAccessPath -> (String, Bool)
 checkPropAccess schema (TP.PropAccessPath var xs) = (L.intercalate "." $ [var] ++ xs, S.check xs schema)
 
+loadTemplate :: IO String
+loadTemplate = readFile "./test-data/blog.html"
+
+loadSchema :: IO String
+loadSchema = readFile "./test-data/blog.schema.js"
+
+printTemplate :: IO ()
+printTemplate = do
+  templateSrc <- loadTemplate
+  putStrLn $ show $ test TP.templateParser templateSrc
+
+printSchema :: IO ()
+printSchema = do
+  schemaSrc <- loadSchema
+  putStrLn $ show $ test SP.schemaParser schemaSrc
+
+printTemplateCheck :: IO ()
+printTemplateCheck =
+  do 
+    templateSrc <- loadTemplate
+    schemaSrc <- loadSchema
+    putStrLn $ show $ do
+      propAccesses <- test TP.templateParser templateSrc
+      schema <- test SP.schemaParser schemaSrc
+      return $ map (checkPropAccess schema) propAccesses
+
 main :: IO ()
 main = do
-  templateSrc <- readFile "./test-data/blog.html"
-  putStrLn $ show $ test TP.templateParser templateSrc
-  schemaSrc <- readFile "./test-data/blog.schema.js"
-  putStrLn $ show $ test SP.schemaParser schemaSrc
-  putStrLn $ show $ do 
-    propAccesses <- test TP.templateParser templateSrc
-    schema <- test SP.schemaParser schemaSrc
-    return $ map (checkPropAccess schema) propAccesses
+  printTemplate
+  printSchema
+  printTemplateCheck
 
